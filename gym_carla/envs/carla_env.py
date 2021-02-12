@@ -294,8 +294,6 @@ class CarlaEnv(gym.Env):
           count -= 1
 
   def _destroy_actors(self):
-      self._clear_all_actors(['sensor.other.collision', 'sensor.lidar.ray_cast', 'sensor.camera.rgb', 'vehicle.*', 'controller.ai.walker', 'walker.*'])
-      
       if self.collision_sensor is not None:
         self.collision_sensor.destroy()
         self.collision_sensor = None
@@ -308,6 +306,7 @@ class CarlaEnv(gym.Env):
         self.camera_sensor.destroy()
         self.camera_sensor = None
 
+      self._clear_all_actors(['sensor.other.collision', 'sensor.lidar.ray_cast', 'sensor.camera.rgb', 'vehicle.*', 'controller.ai.walker', 'walker.*'])
   
   def step(self, action):
     steer, throttle, brake = self._convert_action_to_control(action)
@@ -536,6 +535,7 @@ class CarlaEnv(gym.Env):
 
     # Display on pygame
     pygame.display.flip()
+    pygame.event.pump()
 
     # State observation
     state = self._get_state_obs()
