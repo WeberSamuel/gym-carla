@@ -306,7 +306,7 @@ class CarlaEnv(gym.Env):
         self.camera_sensor.destroy()
         self.camera_sensor = None
 
-      self._clear_all_actors(['sensor.other.collision', 'sensor.lidar.ray_cast', 'sensor.camera.rgb', 'vehicle.*', 'controller.ai.walker', 'walker.*'])
+      self._clear_all_actors(['vehicle.*', 'controller.ai.walker', 'walker.*'])
   
   def step(self, action):
     steer, throttle, brake = self._convert_action_to_control(action)
