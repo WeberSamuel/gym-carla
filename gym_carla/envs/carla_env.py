@@ -68,18 +68,18 @@ class CarlaEnv(gym.Env):
 
   def _load_blueprints(self, params):
       self.ego_bp = self._create_vehicle_bluepprint(params['ego_vehicle_filter'], color='49,8,8')
-      # Collision sensor
-      self.collision_hist = []
-      # The collision history
-      self.collision_hist_l = 1
-      # collision history length
-      self.collision_bp = self.world.get_blueprint_library().find('sensor.other.collision')
-      # Lidar sensor
-      self._load_lidar_blueprint()
-      # Camera sensor
-      self._load_camera_blueprint()
+      self._load_collision_sensor()
+      self._load_lidar_sensor()
+      self._load_camera_sensor()
 
-  def _load_camera_blueprint(self):
+  def _load_collision_sensor(self):
+      self.collision_hist = [] # The collision history
+      self.collision_hist_l = 1 # collision history length
+      self.collision_bp = self.world.get_blueprint_library().find('sensor.other.collision')
+      self.collision_sensor = None
+
+  def _load_camera_sensor(self):
+      self.camera_sensor = None
       self.camera_img = np.zeros((self.obs_size, self.obs_size, 3), dtype=np.uint8)
       self.camera_trans = carla.Transform(carla.Location(x=0.8, z=1.7))
       self.camera_bp = self.world.get_blueprint_library().find('sensor.camera.rgb')
@@ -90,8 +90,9 @@ class CarlaEnv(gym.Env):
       # Set the time in seconds between sensor captures
       self.camera_bp.set_attribute('sensor_tick', '0.02')
 
-  def _load_lidar_blueprint(self):
+  def _load_lidar_sensor(self):
       self.lidar_data = None
+      self.lidar_sensor = None
       self.lidar_height = 2.1
       self.lidar_trans = carla.Transform(carla.Location(x=0.0, z=self.lidar_height))
       self.lidar_bp = self.world.get_blueprint_library().find('sensor.lidar.ray_cast')
@@ -294,10 +295,19 @@ class CarlaEnv(gym.Env):
 
   def _destroy_actors(self):
       self._clear_all_actors(['sensor.other.collision', 'sensor.lidar.ray_cast', 'sensor.camera.rgb', 'vehicle.*', 'controller.ai.walker', 'walker.*'])
-      # Clear sensor objects  
-      self.collision_sensor = None
-      self.lidar_sensor = None
-      self.camera_sensor = None
+      
+      if self.collision_sensor is not None:
+        self.collision_sensor.destroy()
+        self.collision_sensor = None
+
+      if self.lidar_sensor is not None:
+        self.lidar_sensor.destroy()
+        self.lidar_sensor = None
+
+      if self.camera_sensor is not None:
+        self.camera_sensor.destroy()
+        self.camera_sensor = None
+
   
   def step(self, action):
     steer, throttle, brake = self._convert_action_to_control(action)
