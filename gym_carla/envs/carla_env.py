@@ -625,6 +625,9 @@ class CarlaEnv(gym.Env):
       lidar, _ = np.histogramdd(point_cloud, bins=(x_bins, y_bins, z_bins))
       lidar[:,:,0] = np.array(lidar[:,:,0]>0, dtype=np.uint8)
       lidar[:,:,1] = np.array(lidar[:,:,1]>0, dtype=np.uint8)
+      lidar = np.rot90(lidar, 1)
+      lidar = np.flip(lidar, axis=1)
+      lidar = np.flip(lidar, axis=0)
       # Add the waypoints to lidar image
       if self.display_route:
         wayptimg = (birdeye[:,:,0] <= 10) * (birdeye[:,:,1] <= 10) * (birdeye[:,:,2] >= 240)
